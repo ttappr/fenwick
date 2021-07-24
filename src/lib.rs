@@ -165,6 +165,9 @@ where
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
+        // TODO - This code should be fast, and under most conditions O(log n),
+        //        but it could be improved with a more direct approach like
+        //        rank_query() takes.
         let mut idx = self.rank_query(value);
         if self.prefix_sum(idx) < value && idx < self.end() {
             idx += 1;
