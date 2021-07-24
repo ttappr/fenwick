@@ -5,7 +5,7 @@
 //!
 //! I created this simple lib for use in solving coding challenge type problems
 //! that benefit from prefix sums requiring fast operations. The code was 
-//! originally take from the Wikipedia article on Fenwick Trees and modified
+//! originally taken from the Wikipedia article on Fenwick Trees and modified
 //! to create a class. The code also has some fixes for indexing problems in
 //! the original code.
 //!
