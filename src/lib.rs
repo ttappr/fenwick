@@ -47,7 +47,7 @@ where
     {
         // Ensure size is 1 plus a power of 2.
         let n_bits = (size as f64).log(2_f64).ceil();
-        let size   = 2_usize.pow(n_bits as u32) + 1 as usize;
+        let size   = 2_usize.pow(n_bits as u32) + 1_usize;
         
         Fenwick { data: vec![T::default(); size], size }
     }
