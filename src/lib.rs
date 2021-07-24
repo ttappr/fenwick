@@ -160,8 +160,11 @@ where
         i
     }
     
-    /// Find the minimum index with `.prefix_sum(index) >= value`.
-    /// Also requires all values non-negative.
+    /// Find the minimum index with `.prefix_sum(index) >= value` - if there is
+    /// an index where the prefix sum is >= value; however, if not the case,
+    /// this method will return the index of the last element with a non-0 
+    /// value.
+    /// NOTE: This also requires all values non-negative.
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
