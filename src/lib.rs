@@ -159,7 +159,7 @@ where
         i
     }
     
-    /// Find the minimum index with `.prefix_sum(index) >= value` - if there is
+    /// Find the smallest index with `.prefix_sum(index) >= value` - if there is
     /// an index where the prefix sum is >= value; however, if not the case,
     /// this method will return the index of the last element with a non-0 
     /// value.
@@ -168,7 +168,7 @@ where
     pub fn min_rank_query(&self, value: T) -> usize
     {
         let mut i = 0;
-        if self.data[0] != value {
+        if self.data[0] < value {
             let mut j = 1;
             let mut v = (value - self.data[0]).min(self.data[self.end()]);
             i = 1;
