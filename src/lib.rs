@@ -51,6 +51,31 @@ where
         Fenwick { data: vec![T::default(); size], size }
     }
     
+    /// Creates a new Fenwick instance from the provided slice. The data in 
+    /// the slice itself doesn't need to be in accumulated prefix sum form.
+    /// It should just be a slice of unsummed values.
+    ///
+    pub fn from_slice(slice: &[T]) -> Self
+    {
+        // Ensure size is 1 plus a power of 2.
+        let n_bits = (slice.len() as f64).log(2_f64).ceil();
+        let size   = 2_usize.pow(n_bits as u32) + 1_usize;
+        
+        let mut data = Vec::with_capacity(size);
+        
+        data.extend_from_slice(slice);        
+        data.resize(size, T::default());
+        
+        for i in 1..size {
+            let j = i + lsb_usize!(i);
+            if j < size {
+                let d = data[i];
+                data[j] += d;
+            }
+        }
+        Fenwick { data, size }
+    }
+    
     /// Returns the sum of the first `idx` elements (indices 0 to `idx`)
     /// Equivalent to `.range_sum(0, idx)`. Range inclusive, [0..idx].
     ///
@@ -63,6 +88,13 @@ where
             i   -= lsb_usize!(i);
         }
         sum
+    }
+    
+    /// Returns the total prefix sum of all the elements.
+    ///
+    pub fn total(&self) -> T
+    {
+        self.data[self.end()]
     }
     
     /// Returns the index of the last element. This can be used as a parameter
