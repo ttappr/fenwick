@@ -6,6 +6,9 @@ Fenwick Trees are useful where a prefix sum is required but updating it is too
 costly. The Fenwick Tree balances out the costs of update and query operations,
 each with `O(log n)` time complexity.
 
+Although the code is derived from the 1-based version of the tree, it's been
+modified to be 0-based.
+
 ## Operations
 
  * `new(<size>)` - Create a new tree with an internal array of the given size.

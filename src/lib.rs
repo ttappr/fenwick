@@ -3,11 +3,10 @@
 //! sums. Each operation has `O(log n)` time-complexity. Some operations like
 //! `.end()` have `O(1)` time-complexity.
 //!
-//! I created this simple lib for use in solving coding challenge type problems
-//! that benefit from prefix sums requiring fast operations. The code was 
-//! originally taken from the Wikipedia article on Fenwick Trees and modified
-//! to create a class. The code also has some fixes for indexing problems in
-//! the original code.
+//! The code was originally taken from the Wikipedia article on Fenwick Trees 
+//! and modified to create a class. The code has also been modified so the 
+//! tree is 0-based despite being taken from a 1-based implementation 
+//! originally.
 //!
 //! Wikipedia article: https://en.wikipedia.org/wiki/Fenwick_tree
 //!
@@ -166,26 +165,10 @@ where
     /// value.
     /// NOTE: This also requires all values non-negative.
     ///
-    pub fn min_rank_query_bak(&self, value: T) -> usize
-    {
-        // TODO - This code should be fast, and under most conditions O(log n),
-        //        but it could be improved with a more direct approach like
-        //        rank_query() takes.
-        let mut idx = self.rank_query(value);
-        if self.prefix_sum(idx) < value && idx < self.end() {
-            idx += 1;
-        } else {
-            while self.get(idx) == T::default() && idx > 0 {
-                idx -= 1;
-            }
-        }
-        idx
-    }    
-    
     pub fn min_rank_query(&self, value: T) -> usize
     {
         let mut i = 1;
-        let mut j = i;
+        let mut j = 1;
         let mut v = (value - self.data[0]).min(self.data[self.end()]);
       
         while v > T::default() {
