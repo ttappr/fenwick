@@ -16,7 +16,7 @@ use std::ops::Add;
 use std::ops::Sub;
 use std::ops::AddAssign;
 use std::ops::SubAssign;
-use std::cmp::PartialOrd;
+use std::cmp::Ord;
 
 macro_rules! lsb {
     ($i:expr) => (($i) & -($i))
@@ -37,7 +37,7 @@ pub struct Fenwick<T>
 
 impl<T> Fenwick<T>
 where 
-    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + PartialOrd + 
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
        Default + Copy
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
@@ -166,7 +166,7 @@ where
     /// value.
     /// NOTE: This also requires all values non-negative.
     ///
-    pub fn min_rank_query(&self, value: T) -> usize
+    pub fn min_rank_query_bak(&self, value: T) -> usize
     {
         // TODO - This code should be fast, and under most conditions O(log n),
         //        but it could be improved with a more direct approach like
@@ -180,6 +180,18 @@ where
             }
         }
         idx
+    }    
+    
+    pub fn min_rank_query(&self, value: T) -> usize
+    {
+        let mut i = 1;
+        let     v = (value - self.data[0]).min(self.data[self.end()]);
+        
+        while self.data[i] < v && i < self.end() {
+            i <<= 1;
+        }
+        
+        i
     }
 }
 
