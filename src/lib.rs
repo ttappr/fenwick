@@ -94,7 +94,7 @@ where
     ///
     pub fn total(&self) -> T
     {
-        self.data[self.end()]
+        self.data[self.end()] + self.data[0]
     }
     
     /// Returns the index of the last element. This can be used as a parameter
@@ -299,47 +299,6 @@ mod tests {
     }
     
     #[test]
-    fn min_rank_query_pre_test() {
-        let mut fw = Fenwick::new(8);
-        fw.add(0, 1);
-        
-        assert_eq!(fw.rank_query(2), 8); // Note the greedy nature of query.
-        assert_eq!(fw.end(), 8);         // Goes all the way to the end.
-        
-        // fw.add(0, 1);  // sum = 1
-        fw.add(1, 1);  // sum = 2 
-        fw.add(2, 3);  // sum = 5
-        fw.add(3, 1);  // sum = 6
-        fw.add(4, 1);  // sum = 7
-        
-        // Stops shy of finding min index >= 3.
-        assert_eq!(fw.rank_query(3), 1); 
-        
-        // If we want to know what index we'll land on to satisfy a value of
-        // 3, we'll have to test the prefix sum and increment.
-        let mut idx = fw.rank_query(3);
-        
-        assert_eq!(fw.prefix_sum(idx), 2);
-        
-        if fw.prefix_sum(idx) < 3 {
-            idx += 1;
-        }
-        assert_eq!(idx, 2);
-        
-        // If we choose a value larger than the prefix sum, we should end up
-        // at the tail end of the array and have to backtrack to find the
-        // index of an element with a non-0 value.
-        idx = fw.rank_query(8);
-        
-        assert_eq!(idx, 8);
-        
-        while fw.get(idx) == 0 {
-            idx -= 1;
-        }
-        assert_eq!(idx, 4);
-    }
-    
-    #[test]
     fn min_rank_query() {
         let mut fw = Fenwick::new(8);
         fw.add(0, 1);  // sum = 1
@@ -349,11 +308,11 @@ mod tests {
         fw.add(4, 1);  // sum = 7
         
         assert_eq!(fw.min_rank_query(3), 2);  // Check basic.
-        assert_eq!(fw.min_rank_query(8), 4);  // Check backtracking.
+        assert_eq!(fw.min_rank_query(8), 4);  // Check that it falls on min.
         
         fw.add(7, 3);  // sum = 10
         
-        assert_eq!(fw.min_rank_query(7), 4);  // Should backtrack to 4.
+        assert_eq!(fw.min_rank_query(7), 4);  // Should fall to 4.
         assert_eq!(fw.min_rank_query(8), 7);  // Should advance to 7.
         
     }
