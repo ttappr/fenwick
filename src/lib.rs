@@ -171,19 +171,15 @@ where
         let mut j = 1;
         let mut v = (value - self.data[0]).min(self.data[self.end()]);
       
-        while v > T::default() {
-            if self.data[i] < v {
-                while self.data[i] < v {
-                    j  = i;
-                    i += lsb_usize!(i);
-                }
-                if self.data[i] == v { break; }
-                i  = j;
-                v -= self.data[i];
-                i += 1;
-            } else {
-                break;
+        while v > T::default() && self.data[i] < v {
+            while self.data[i] < v {
+                j  = i;
+                i += lsb_usize!(i);
             }
+            if self.data[i] == v { break; }
+            i  = j;
+            v -= self.data[i];
+            i += 1;
         }
         i
     }
