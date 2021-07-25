@@ -45,14 +45,14 @@ use fenwick::*;
 ///
 fn wsample(population: &[i32], weights: &[i32], k: usize) -> Vec<i32>
 {
-    let mut prefix_sum = Fenwick::from_slice(weights);
+    let mut prefix_sum = Fenwick::from_slice(weights);  // Create from slice.
     let mut rng        = rand::thread_rng();
     let mut sample     = vec![];
     
     for _ in 0..k {
         let r   = rng.gen::<f32>() * prefix_sum.total() as f32;
-        let sel = prefix_sum.min_rank_query(r as i32);
-        prefix_sum.set(sel, 0);
+        let sel = prefix_sum.min_rank_query(r as i32);  // Querying by value.
+        prefix_sum.set(sel, 0);                         // Eliminate selection.
         sample.push(population[sel]);
     }
     sample
