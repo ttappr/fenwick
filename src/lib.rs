@@ -185,12 +185,23 @@ where
     pub fn min_rank_query(&self, value: T) -> usize
     {
         let mut i = 1;
-        let     v = (value - self.data[0]).min(self.data[self.end()]);
-        
-        while self.data[i] < v && i < self.end() {
-            i <<= 1;
+        let mut j = i;
+        let mut v = (value - self.data[0]).min(self.data[self.end()]);
+      
+        while v > T::default() {
+            if self.data[i] < v {
+                while self.data[i] < v {
+                    j  = i;
+                    i += lsb_usize!(i);
+                }
+                if self.data[i] == v { break; }
+                i  = j;
+                v -= self.data[i];
+                i += 1;
+            } else {
+                break;
+            }
         }
-        
         i
     }
 }
