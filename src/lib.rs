@@ -146,10 +146,10 @@ where
     ///
     pub fn get(&self, idx: usize) -> T
     {
-        if idx > 0 {
-            self.range_sum(idx - 1, idx)
-        } else {
+        if idx == 0 {
             self.data[0]
+        } else {
+            self.range_sum(idx - 1, idx)
         }
     }
     
