@@ -206,7 +206,7 @@ where
             let mut d = self.data[i];
             let mut v = (value - self.data[0]).min(d);
             
-            while i & 0x01 != 1 {
+            while i & 0x01 == 0 {
                 if d < v {
                     v -= d;
                     i += lsb_usize!(i >> 1);
@@ -295,6 +295,11 @@ mod tests {
         fw.add(2, 3);  // sum = 5
         fw.add(3, 1);  // sum = 6
         fw.add(4, 1);  // sum = 7
+
+        assert_eq!(fw.rank_query(0), 0);
+        assert_eq!(fw.rank_query(1), 0);
+        assert_eq!(fw.rank_query(2), 1);
+        assert_eq!(fw.rank_query(7), 8);
         
         assert_eq!(fw.rank_query(5), 2);
         assert_eq!(fw.rank_query(6), 3);
@@ -311,6 +316,8 @@ mod tests {
         fw.add(2, 3);  // sum = 5
         fw.add(3, 1);  // sum = 6
         fw.add(4, 1);  // sum = 7
+
+        assert_eq!(fw.min_rank_query(1), 0);
         
         assert_eq!(fw.min_rank_query(3), 2);  // Check basic.
         assert_eq!(fw.min_rank_query(8), 4);  // Check that it falls on min.
