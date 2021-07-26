@@ -199,6 +199,27 @@ where
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
+        let mut i = 0;
+        if self.data[0] < value {
+            let mut j = 1;
+            let mut v = (value - self.data[0]).min(self.data[self.end()]);
+            i = 1;
+            while self.data[i] < v {
+                while self.data[i] < v {
+                    j  = i;
+                    i += lsb_usize!(i);
+                }
+                if self.data[i] == v { break; }
+                i  = j;
+                v -= self.data[i];
+                i += 1;
+            }
+        }
+        i
+    }
+
+    pub fn min_rank_query_in_prog(&self, value: T) -> usize
+    {
         if value <= self.data[0] {
             0
         } else {
