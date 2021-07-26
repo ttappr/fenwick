@@ -51,9 +51,11 @@ fn wsample(population: &[i32], weights: &[i32], k: usize) -> Vec<i32>
     let mut sample     = vec![];
     
     for _ in 0..k {
-        let r   = rng.gen::<f32>() * prefix_sum.total() as f32;
+        let r   = (rng.gen::<f32>() * prefix_sum.total() as f32).ceil();
+        
         let sel = prefix_sum.min_rank_query(r as i32);  // Querying by value.
         prefix_sum.set(sel, 0);                         // Eliminate selection.
+        
         sample.push(population[sel]);
     }
     sample
