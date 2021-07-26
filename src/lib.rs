@@ -16,7 +16,6 @@ use std::ops::Sub;
 use std::ops::AddAssign;
 use std::ops::SubAssign;
 use std::cmp::Ord;
-use std::cmp::Ordering;
 
 macro_rules! lsb {
     ($i:expr) => (($i) & -($i))
@@ -198,30 +197,8 @@ where
     /// value.
     /// NOTE: This also requires all values non-negative.
     ///
-    pub fn min_rank_query_bak(&self, value: T) -> usize
-    {
-        let mut i = 0;
-        if self.data[0] < value {
-            let mut j = 1;
-            let mut v = (value - self.data[0]).min(self.data[self.end()]);
-            i = 1;
-            while self.data[i] < v {
-                while self.data[i] < v {
-                    j  = i;
-                    i += lsb_usize!(i);
-                }
-                if self.data[i] == v { break; }
-                i  = j;
-                v -= self.data[i];
-                i += 1;
-            }
-        }
-        i
-    }
-    
     pub fn min_rank_query(&self, value: T) -> usize
     {
-        use Ordering::*;
         if value <= self.data[0] {
             0
         } else {
@@ -230,14 +207,11 @@ where
             let mut v = (value - self.data[0]).min(d);
             
             while d > T::default() && i & 0x01 != 1 {
-                match d.cmp(&v) {
-                    Less => {
-                        v -= d;
-                        i += lsb_usize!(i >> 1);
-                    },
-                    Greater | Equal => {
-                        i -= lsb_usize!(i >> 1);
-                    },
+                if d < v {
+                    v -= d;
+                    i += lsb_usize!(i >> 1);
+                } else {
+                    i -= lsb_usize!(i >> 1);
                 }
                 d = self.data[i];
             }
@@ -341,7 +315,7 @@ mod tests {
         
         assert_eq!(fw.min_rank_query(7), 4);  // Should fall to 4.
         assert_eq!(fw.min_rank_query(8), 7);  // Should advance to 7.
-        
+        assert_eq!(fw.min_rank_query(10), 7);
     }
 }
 
