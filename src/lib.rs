@@ -16,6 +16,7 @@ use std::ops::Sub;
 use std::ops::AddAssign;
 use std::ops::SubAssign;
 use std::cmp::Ord;
+use std::cmp::Ordering;
 
 macro_rules! lsb {
     ($i:expr) => (($i) & -($i))
@@ -197,7 +198,7 @@ where
     /// value.
     /// NOTE: This also requires all values non-negative.
     ///
-    pub fn min_rank_query(&self, value: T) -> usize
+    pub fn min_rank_query_bak(&self, value: T) -> usize
     {
         let mut i = 0;
         if self.data[0] < value {
@@ -216,6 +217,32 @@ where
             }
         }
         i
+    }
+    
+    pub fn min_rank_query(&self, value: T) -> usize
+    {
+        use Ordering::*;
+        if value <= self.data[0] {
+            0
+        } else {
+            let mut i = self.end();
+            let mut d = self.data[i];
+            let mut v = (value - self.data[0]).min(d);
+            
+            while d > T::default() && i & 0x01 != 1 {
+                match d.cmp(&v) {
+                    Less => {
+                        v -= d;
+                        i += lsb_usize!(i >> 1);
+                    },
+                    Greater | Equal => {
+                        i -= lsb_usize!(i >> 1);
+                    },
+                }
+                d = self.data[i];
+            }
+            i + 1
+        }
     }
 }
 
