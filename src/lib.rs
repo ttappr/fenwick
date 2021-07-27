@@ -149,17 +149,17 @@ where
         if idx == 0 {
             self.data[0]
         } else {
-            self.range_sum(idx - 1, idx)
+            self.range_sum(idx, idx)
         }
     }
     
-    /// Returns the sum of elements from `idx_i + 1` to `idx_j`, Equivalent to 
-    /// `.prefix_sum(idx_j) - .prefix_sum(idx_i)`, but faster.
+    /// Returns the sum of elements from `idx_i` to `idx_j` inclusive, Similar 
+    /// to `.prefix_sum(idx_j) - .prefix_sum(idx_i - 1)`, but faster.
     ///
     pub fn range_sum(&self, idx_i: usize, idx_j: usize) -> T
     {
-        let mut sum = T::default();
-        let mut i   = idx_i;
+        let mut sum = if idx_i > 0 { T::default() } else { self.data[0] };
+        let mut i   = if idx_i > 0 { idx_i - 1    } else { 0            };
         let mut j   = idx_j;
         while j > i {
             sum += self.data[j];
@@ -285,6 +285,25 @@ mod tests {
         fw.set(1, 0);
         assert_eq!(fw.get(1), 0);
         assert_eq!(fw.prefix_sum(8), 5);
+        
+        assert_eq!(fw.get(0), 5);
+        fw.set(0, 4);
+        assert_eq!(fw.get(0), 4);
+    }
+    
+    #[test]
+    fn range_sum() {
+        let mut fw = Fenwick::new(8);
+        fw.add(0, 1);  // sum = 1
+        fw.add(1, 1);  // sum = 2 
+        fw.add(2, 3);  // sum = 5
+        fw.add(3, 1);  // sum = 6
+        fw.add(4, 1);  // sum = 7
+        
+        assert_eq!(fw.range_sum(1, 3), 5);
+        assert_eq!(fw.range_sum(0, 3), 6);
+        
+        assert_eq!(fw.range_sum(2, 4), 5);
     }
     
     #[test]
