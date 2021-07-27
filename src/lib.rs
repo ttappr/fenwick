@@ -183,7 +183,7 @@ where
     ///
     pub fn rank_query(&self, value: T) -> usize
     {
-        debug_assert!(self.data.iter().all(|&n| n >= T::default()));
+        debug_assert!(self.data.iter().all(|&n| n >= /* 0 */ T::default()));
         let mut i = 0;
         let mut j = self.size - 1;
         let mut v = value - self.data[0];
@@ -206,7 +206,7 @@ where
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
-        debug_assert!(self.data.iter().all(|&n| n >= T::default()));
+        debug_assert!(self.data.iter().all(|&n| n >= /* 0 */ T::default()));
         if value <= self.data[0] {
             0
         } else {
