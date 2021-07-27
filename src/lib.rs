@@ -37,7 +37,7 @@ pub struct Fenwick<T>
 impl<T> Fenwick<T>
 where 
     T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
-       Default + Copy
+       From<i32> + Copy
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
     /// prefix sums.
@@ -48,7 +48,7 @@ where
         let n_bits = (size as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
         
-        Fenwick { data: vec![T::default(); size], size }
+        Fenwick { data: vec![T::from(0); size], size }
     }
     
     /// Creates a new Fenwick instance from the provided slice. The data in 
@@ -64,7 +64,7 @@ where
         let mut data = Vec::with_capacity(size);
         
         data.extend_from_slice(slice);        
-        data.resize(size, T::default());
+        data.resize(size, T::from(0));
         
         for i in 1..size {
             let j = i + lsb_usize!(i);
@@ -81,6 +81,7 @@ where
     ///
     pub fn prefix_sum(&self, idx: usize) -> T
     {
+        debug_assert!(idx <= self.end());
         let mut sum = self.data[0];
         let mut i   = idx;
         while i != 0 { 
@@ -109,6 +110,7 @@ where
     ///
     pub fn add(&mut self, idx: usize, delta: T)
     {
+        debug_assert!(idx <= self.end());
         if idx == 0 {
             self.data[0] += delta;
         } else {
@@ -124,6 +126,7 @@ where
     /// 
     pub fn sub(&mut self, idx: usize, delta: T)
     {
+        debug_assert!(idx <= self.end());
         if idx == 0 {
             self.data[0] -= delta;
         } else {
@@ -139,6 +142,7 @@ where
     ///
     pub fn set(&mut self, idx: usize, value: T)
     {
+        debug_assert!(idx <= self.end());
         self.add(idx, value - self.get(idx))
     }
     
@@ -146,6 +150,7 @@ where
     ///
     pub fn get(&self, idx: usize) -> T
     {
+        debug_assert!(idx <= self.end());
         if idx == 0 {
             self.data[0]
         } else {
@@ -158,8 +163,9 @@ where
     ///
     pub fn range_sum(&self, idx_i: usize, idx_j: usize) -> T
     {
-        let mut sum = if idx_i > 0 { T::default() } else { self.data[0] };
-        let mut i   = if idx_i > 0 { idx_i - 1    } else { 0            };
+        debug_assert!(idx_i <= idx_j && idx_j <= self.end());
+        let mut sum = if idx_i > 0 { T::from(0) } else { self.data[0] };
+        let mut i   = if idx_i > 0 { idx_i - 1  } else { 0            };
         let mut j   = idx_j;
         while j > i {
             sum += self.data[j];
@@ -177,6 +183,7 @@ where
     ///
     pub fn rank_query(&self, value: T) -> usize
     {
+        debug_assert!(self.data.iter().all(|&n| n >= T::from(0)));
         let mut i = 0;
         let mut j = self.size - 1;
         let mut v = value - self.data[0];
@@ -199,6 +206,7 @@ where
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
+        debug_assert!(self.data.iter().all(|&n| n >= T::from(0)));
         if value <= self.data[0] {
             0
         } else {
