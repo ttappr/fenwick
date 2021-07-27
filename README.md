@@ -77,8 +77,8 @@ be included in the sample taken.
 A random number is generated from 0 to the prefix sum total (all weights added
 together). Then this generated value is used to look up the index of the element 
 in the tree that represents that portion of the range. Some indices represent
-wider ranges than others which increases their odds of being struck by the random
-value.
+wider ranges than others which increases their odds of the random value falling
+within their range.
 
 After the selected item is found, its value is then set to 0 to remove it from
 subsequent samples (sampling without replacement).
