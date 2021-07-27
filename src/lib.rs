@@ -304,6 +304,7 @@ mod tests {
         assert_eq!(fw.range_sum(0, 3), 6);
         
         assert_eq!(fw.range_sum(2, 4), 5);
+        assert_eq!(fw.range_sum(0, 0), 1);
     }
     
     #[test]
