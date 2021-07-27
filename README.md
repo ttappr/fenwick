@@ -15,6 +15,7 @@ modified to be 0-based.
  * `from_slice(<slice>)` - Create a new tree from a slice.
  * `prefix_sum(<idx>)` - Get the prefix sum of all elements up to idx inclusive.
  * `end()` - The index of the array's last element.
+ * `total()` - The prefix sum of all elements - an `O(1)` operation.
  * `add(<idx>, <delta>)` - Add delta to element at idx.
  * `sub(<idx>, <delta>)` - Subtract delta from element at idx.
  * `set(<idx>, <value>)` - Set element at idx to value.
