@@ -20,7 +20,7 @@ modified to be 0-based.
  * `sub(<idx>, <delta>)` - Subtract delta from element at idx.
  * `set(<idx>, <value>)` - Set element at idx to value.
  * `get(<idx>)` - Get value of element at idx.
- * `range_sum(<idx_i>, <idx_j>)` - Get sum of elements from idx_i + 1 to idx_j.
+ * `range_sum(<idx_i>, <idx_j>)` - Get sum of elements from idx_i to idx_j inclusive.
  * `rank_query(<value>)` - Find the largest index with `.prefix_sum(index) <= value`.
  * `min_rank_query(<value>)` - Find the smallest index with `.prefix_sum(index) >= value`.
  
