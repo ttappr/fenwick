@@ -163,11 +163,11 @@ where
         let mut j   = idx_j;
         while j > i {
             sum += self.data[j];
-            j -= lsb_usize!(j);
+            j   -= lsb_usize!(j);
         }
         while i > j {
             sum -= self.data[i];
-            i -= lsb_usize!(i);
+            i   -= lsb_usize!(i);
         }
         sum
     }
@@ -327,8 +327,8 @@ mod tests {
         assert_eq!(fw.min_rank_query(7), 4);  // Should fall to 4.
         assert_eq!(fw.min_rank_query(8), 7);  // Should advance to 7.
 
-        // Uh oh!
-        //assert_eq!(fw.min_rank_query(10), 7);
+        assert_eq!(fw.min_rank_query(10), 7);
+        assert_eq!(fw.min_rank_query(11), 7);
     }
 }
 
