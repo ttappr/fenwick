@@ -143,7 +143,12 @@ where
     pub fn set(&mut self, idx: usize, value: T)
     {
         debug_assert!(idx <= self.end());
-        self.add(idx, value - self.get(idx))
+        let cur_val = self.get(idx);
+        if cur_val <= value {
+            self.add(idx, value - cur_val);
+        } else {
+            self.sub(idx, cur_val - value);
+        }
     }
     
     /// Return a single element's value.
@@ -308,6 +313,11 @@ mod tests {
         assert_eq!(fw.get(fw.end()), 3);
         assert_eq!(fw.prefix_sum(fw.end()), 7);
         assert_eq!(fw.total(), 7);
+        
+        fw.set(0, 8);
+        assert_eq!(fw.get(0), 8);
+        fw.set(0, 0);
+        assert_eq!(fw.get(0), 0);
     }
     
     #[test]
