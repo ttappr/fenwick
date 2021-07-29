@@ -8,7 +8,7 @@
 //! tree is 0-based despite being taken from a 1-based implementation 
 //! originally.
 //!
-//! Wikipedia article: https://en.wikipedia.org/wiki/Fenwick_tree
+//! Wikipedia article: <https://en.wikipedia.org/wiki/Fenwick_tree>
 //!
 
 use std::ops::Add;
