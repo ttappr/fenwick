@@ -53,7 +53,8 @@ where
     
     /// Creates a new Fenwick instance from the provided slice. The data in 
     /// the slice itself doesn't need to be in accumulated prefix sum form.
-    /// It should just be a slice of unsummed values.
+    /// It should just be a slice of unsummed values. This function has `O(n)`
+    /// time-complexity.
     ///
     pub fn from_slice(slice: &[T]) -> Self
     {

@@ -12,7 +12,7 @@ modified to be 0-based.
 ## Operations
 
  * `new(<size>)` - Create a new tree with an internal array of the given size.
- * `from_slice(<slice>)` - Create a new tree from a slice.
+ * `from_slice(<slice>)` - Create a new tree from a slice. An `O(n)` operation.
  * `prefix_sum(<idx>)` - Get the prefix sum of all elements up to idx inclusive.
  * `end()` - The index of the array's last element.
  * `total()` - The prefix sum of all elements - an `O(1)` operation.
