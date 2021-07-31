@@ -16,8 +16,6 @@ use std::ops::Sub;
 use std::ops::AddAssign;
 use std::ops::SubAssign;
 use std::cmp::Ord;
-use std::convert::TryFrom;
-use std::num::TryFromIntError;
 
 macro_rules! lsb {
     ($i:expr) => (($i) & -($i))
@@ -34,13 +32,12 @@ pub struct Fenwick<T>
 {
     data: Vec<T>,
     size: usize,
-    zero: T,
 }
 
 impl<T> Fenwick<T>
 where 
     T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
-       Copy + TryFrom<u32, Error = TryFromIntError>,
+       Default + Copy,
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
     /// prefix sums.
@@ -50,9 +47,8 @@ where
         // Ensure size is 1 plus a power of 2.
         let n_bits = (size as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
-        let zero   = T::try_from(0).unwrap();
         
-        Fenwick { data: vec![zero; size], size, zero }
+        Fenwick { data: vec![T::default(); size], size }
     }
     
     /// Creates a new Fenwick instance from the provided slice. The data in 
@@ -65,12 +61,11 @@ where
         // Ensure size is 1 plus a power of 2.
         let n_bits = (slice.len() as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
-        let zero   = T::try_from(0).unwrap();
         
         let mut data = Vec::with_capacity(size);
         
         data.extend_from_slice(slice);        
-        data.resize(size, zero);
+        data.resize(size, T::default());
         
         for i in 1..size {
             let j = i + lsb_usize!(i);
@@ -79,7 +74,7 @@ where
                 data[j] += d;
             }
         }
-        Fenwick { data, size, zero }
+        Fenwick { data, size }
     }
     
     /// Returns the sum of the first `idx` elements (indices 0 to `idx`)
@@ -175,8 +170,8 @@ where
     pub fn range_sum(&self, idx_i: usize, idx_j: usize) -> T
     {
         debug_assert!(idx_i <= idx_j && idx_j <= self.end());
-        let mut sum = if idx_i > 0 { self.zero } else { self.data[0] };
-        let mut i   = if idx_i > 0 { idx_i - 1 } else { 0            };
+        let mut sum = if idx_i > 0 { T::default() } else { self.data[0] };
+        let mut i   = if idx_i > 0 { idx_i - 1    } else { 0            };
         let mut j   = idx_j;
         while j > i {
             sum += self.data[j];
@@ -194,7 +189,8 @@ where
     ///
     pub fn rank_query(&self, value: T) -> usize
     {
-        debug_assert!(self.data.iter().all(|&n| n >= self.zero));
+        debug_assert!(self.data.iter().all(|&n| n >= T::default()),
+                      "All elements must be non-negative to use this feature.");
         let mut i = 0;
         let mut j = self.size - 1;
         let mut v = value - self.data[0];
@@ -217,7 +213,8 @@ where
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
-        debug_assert!(self.data.iter().all(|&n| n >= self.zero));
+        debug_assert!(self.data.iter().all(|&n| n >= T::default()), 
+                      "All elements must be non-negative to use this feature.");
         if value <= self.data[0] {
             0
         } else {
