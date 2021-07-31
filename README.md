@@ -9,10 +9,10 @@ each with `O(log n)` time complexity.
 This implementation has 0-based indexing, despite having been derived from the 
 tree's 1-based version.
 
-The debug build has `debug_assert`'s to ensure parameters are within range for
-some functions and all values are non-negative for `.rank_query()` and 
-`.min_rank_query()`. This may make these query functions seem slow for debug, but
-the asserts aren't included in the release build, which will execute much faster.
+Some functions include `debug_assert`'s to ensure parameters are within range.
+`.rank_query()` and `.min_rank_query()` have debug asserts to ensure all elements
+are non-negative. These asserts are excluded when the code is compiled with 
+optimizations, so release builds will have significantly faster performance.
 
 ## Operations
 
