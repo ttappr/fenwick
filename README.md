@@ -10,7 +10,7 @@ Although the code is derived from the 1-based version of the tree, it's been
 modified to be 0-based.
 
 The debug build has `debug_assert`'s to ensure parameters are within range for
-some functions and all values are positive for `.rank_query()` and 
+some functions and all values are non-negative for `.rank_query()` and 
 `.min_rank_query()`. This may make the query functions seem slow for debug, but
 the asserts aren't included in the release build, which will execute much faster.
 
