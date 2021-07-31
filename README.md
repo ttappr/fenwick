@@ -6,12 +6,12 @@ Fenwick Trees are useful where a prefix sum is required but updating it is too
 costly. The Fenwick Tree balances out the costs of update and query operations,
 each with `O(log n)` time complexity.
 
-Although the code is derived from the 1-based version of the tree, it's been
-modified to be 0-based.
+This implementation has 0-based indexing, despite having been derived from the 
+tree's 1-based version.
 
 The debug build has `debug_assert`'s to ensure parameters are within range for
 some functions and all values are non-negative for `.rank_query()` and 
-`.min_rank_query()`. This may make the query functions seem slow for debug, but
+`.min_rank_query()`. This may make these query functions seem slow for debug, but
 the asserts aren't included in the release build, which will execute much faster.
 
 ## Operations
@@ -75,16 +75,14 @@ fn main() {
 }
 ```
  
-In the code above, the tree acts as a prefix sum of the accumulated weights
-of the population members. The greater the weight, the better the odds it will
-be included in the sample taken.
+In the code above, the tree acts as a prefix sum for the cummulative weights
+of the population members. For each member, the greater its weight, the better
+the odds it will be included in the sample taken.
 
 A random number is generated from 0 to the prefix sum total (all weights added
-together). Then this generated value is used to look up the index of the element 
-in the tree that represents that portion of the range. Some indices represent
-wider ranges than others which increases their odds of the random value falling
-within their range.
+together). This generated value is then used to look up the index of the element 
+corresponding to that portion of the overall range.
 
-After the selected item is found, its value is then set to 0 to remove it from
-subsequent samples (sampling without replacement).
+After a member's index is selected, its value is set to 0 to remove it from subsequent 
+samples (sampling without replacement).
  
