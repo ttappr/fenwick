@@ -16,6 +16,8 @@ use std::ops::Sub;
 use std::ops::AddAssign;
 use std::ops::SubAssign;
 use std::cmp::Ord;
+use std::convert::TryFrom;
+use std::num::TryFromIntError;
 
 macro_rules! lsb {
     ($i:expr) => (($i) & -($i))
@@ -37,7 +39,7 @@ pub struct Fenwick<T>
 impl<T> Fenwick<T>
 where 
     T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
-       Default + Copy
+       Default + Copy + TryFrom<u32, Error = TryFromIntError>,
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
     /// prefix sums.
@@ -189,7 +191,7 @@ where
     ///
     pub fn rank_query(&self, value: T) -> usize
     {
-        debug_assert!(self.data.iter().all(|&n| n >= /* 0 */ T::default()));
+        debug_assert!(self.data.iter().all(|&n| n >= T::try_from(0).unwrap()));
         let mut i = 0;
         let mut j = self.size - 1;
         let mut v = value - self.data[0];
@@ -212,7 +214,7 @@ where
     ///
     pub fn min_rank_query(&self, value: T) -> usize
     {
-        debug_assert!(self.data.iter().all(|&n| n >= /* 0 */ T::default()));
+        debug_assert!(self.data.iter().all(|&n| n >= T::try_from(0).unwrap()));
         if value <= self.data[0] {
             0
         } else {
