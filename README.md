@@ -10,13 +10,15 @@ This implementation has 0-based indexing, despite having been derived from the
 tree's 1-based version.
 
 Some functions include `debug_assert`'s to ensure parameters are within range.
-`.rank_query()` and `.min_rank_query()` have debug asserts to ensure all elements
-are non-negative. These asserts are excluded when the code is compiled with 
-optimizations, so release builds will have significantly faster performance.
+`.rank_query()` and `.min_rank_query()` have debug asserts to ensure all 
+elements are non-negative. These asserts are excluded when the code is compiled 
+with optimizations, so release builds will have significantly faster 
+performance.
 
 ## Operations
 
- * `new(<size>)` - Create a new tree with an internal array of the given size.
+ * `new(<size>)` - Create a new tree with an internal array of at least the 
+ given size (1 + a power of 2).
  * `from_slice(<slice>)` - Create a new tree from a slice. An `O(n)` operation.
  * `prefix_sum(<idx>)` - Get the prefix sum of all elements up to idx inclusive.
  * `end()` - The index of the array's last element.
@@ -25,9 +27,12 @@ optimizations, so release builds will have significantly faster performance.
  * `sub(<idx>, <delta>)` - Subtract delta from element at idx.
  * `set(<idx>, <value>)` - Set element at idx to value.
  * `get(<idx>)` - Get value of element at idx.
- * `range_sum(<idx_i>, <idx_j>)` - Get sum of elements from idx_i to idx_j inclusive.
- * `rank_query(<value>)` - Find the largest index with `.prefix_sum(index) <= value`.
- * `min_rank_query(<value>)` - Find the smallest index with `.prefix_sum(index) >= value`.
+ * `range_sum(<idx_i>, <idx_j>)` - Get sum of elements from idx_i to idx_j 
+ inclusive.
+ * `rank_query(<value>)` - Find the largest index with 
+ `.prefix_sum(index) <= value`.
+ * `min_rank_query(<value>)` - Find the smallest index with 
+ `.prefix_sum(index) >= value`.
  
 ## Example
 
@@ -83,6 +88,6 @@ A random number is generated from 0 to the prefix sum total (all weights added
 together). This generated value is then used to look up the index of the element 
 corresponding to that portion of the overall range.
 
-After a member's index is selected, its value is set to 0 to remove it from subsequent 
-samples (sampling without replacement).
+After a member's index is selected, its value is set to 0 to remove it from 
+subsequent samples (sampling without replacement).
  

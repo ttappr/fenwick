@@ -40,7 +40,8 @@ where
        Default + Copy,
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
-    /// prefix sums.
+    /// prefix sums. The size is adjusted to be 1 + a power of 2 if it already
+    /// isn't.
     ///
     pub fn new(size: usize) -> Self
     {
@@ -337,6 +338,7 @@ mod tests {
         
         assert_eq!(fw.range_sum(2, 4), 5);
         assert_eq!(fw.range_sum(0, 0), 1);
+        assert_eq!(fw.range_sum(2, 2), 3);
     }
     
     #[test]
