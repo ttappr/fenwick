@@ -28,8 +28,7 @@ macro_rules! lsb_usize {
 /// Represents a prefix sum array with `O(log n)` update operations.
 ///
 #[derive(Debug)]
-pub struct Fenwick<T>
-{
+pub struct Fenwick<T> {
     data: Vec<T>,
     size: usize,
 }
@@ -37,14 +36,12 @@ pub struct Fenwick<T>
 impl<T> Fenwick<T>
 where 
     T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
-       Default + Copy,
-{
+       Default + Copy, {
     /// Creates a new Fenwick Tree for use in calculating and updating
     /// prefix sums. The size is adjusted to be 1 + a power of 2 if it already
     /// isn't.
     ///
-    pub fn new(size: usize) -> Self
-    {
+    pub fn new(size: usize) -> Self {
         // Ensure size is 1 plus a power of 2.
         let n_bits = (size as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
@@ -57,8 +54,7 @@ where
     /// It should just be a slice of unsummed values. This function has `O(n)`
     /// time-complexity.
     ///
-    pub fn from_slice(slice: &[T]) -> Self
-    {
+    pub fn from_slice(slice: &[T]) -> Self {
         // Ensure size is 1 plus a power of 2.
         let n_bits = (slice.len() as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
@@ -77,12 +73,35 @@ where
         }
         Fenwick { data, size }
     }
+
+    /// Creates a new Fenwick instance from the provided vector. The data in 
+    /// the vector itself doesn't need to be in accumulated prefix sum form.
+    /// It should just be a vector of unsummed values. This function has `O(n)`
+    /// time-complexity.
+    ///
+    pub fn from_vec(vec: Vec<T>) -> Self {
+        // Ensure size is 1 plus a power of 2.
+        let n_bits = (vec.len() as f64).log(2_f64).ceil();
+        let size   = 2_usize.pow(n_bits as u32) + 1_usize;
+
+        let mut data = vec;
+        
+        data.resize(size, T::default());
+        
+        for i in 1..size {
+            let j = i + lsb_usize!(i);
+            if j < size {
+                let d = data[i];
+                data[j] += d;
+            }
+        }
+        Fenwick { data, size }
+    }
     
     /// Returns the sum of the first `idx` elements (indices 0 to `idx`)
     /// Equivalent to `.range_sum(0, idx)`. Range inclusive, [0..idx].
     ///
-    pub fn prefix_sum(&self, idx: usize) -> T
-    {
+    pub fn prefix_sum(&self, idx: usize) -> T {
         debug_assert!(idx <= self.end());
         let mut sum = self.data[0];
         let mut i   = idx;
@@ -95,23 +114,20 @@ where
     
     /// Returns the total prefix sum of all the elements.
     ///
-    pub fn total(&self) -> T
-    {
+    pub fn total(&self) -> T {
         self.data[self.end()] + self.data[0]
     }
     
     /// Returns the index of the last element. This can be used as a parameter
     /// to `.range_sum()` or other methods.
     ///
-    pub fn end(&self) -> usize
-    {
+    pub fn end(&self) -> usize {
         self.size - 1
     }
     
     /// Add `delta` to element with index `idx` (zero-based).
     ///
-    pub fn add(&mut self, idx: usize, delta: T)
-    {
+    pub fn add(&mut self, idx: usize, delta: T) {
         debug_assert!(idx <= self.end());
         if idx == 0 {
             self.data[0] += delta;
@@ -126,8 +142,7 @@ where
     
     /// Subtract `delta` from element with index `idx`.
     /// 
-    pub fn sub(&mut self, idx: usize, delta: T)
-    {
+    pub fn sub(&mut self, idx: usize, delta: T) {
         debug_assert!(idx <= self.end());
         if idx == 0 {
             self.data[0] -= delta;
@@ -142,8 +157,7 @@ where
     
     /// Set (as opposed to adjust) a single element's value.
     ///
-    pub fn set(&mut self, idx: usize, value: T)
-    {
+    pub fn set(&mut self, idx: usize, value: T) {
         debug_assert!(idx <= self.end());
         let cur_val = self.get(idx);
         if cur_val <= value {
@@ -155,8 +169,7 @@ where
     
     /// Return a single element's value.
     ///
-    pub fn get(&self, idx: usize) -> T
-    {
+    pub fn get(&self, idx: usize) -> T {
         debug_assert!(idx <= self.end());
         if idx == 0 {
             self.data[0]
@@ -168,12 +181,12 @@ where
     /// Returns the sum of elements from `idx_i` to `idx_j` inclusive, Similar 
     /// to `.prefix_sum(idx_j) - .prefix_sum(idx_i - 1)`, but faster.
     ///
-    pub fn range_sum(&self, idx_i: usize, idx_j: usize) -> T
-    {
+    pub fn range_sum(&self, idx_i: usize, idx_j: usize) -> T {
         debug_assert!(idx_i <= idx_j && idx_j <= self.end());
-        let mut sum = if idx_i > 0 { T::default() } else { self.data[0] };
-        let mut i   = if idx_i > 0 { idx_i - 1    } else { 0            };
-        let mut j   = idx_j;
+        let (mut sum, mut i, mut j) = {
+            if idx_i > 0 { (T::default(), idx_i - 1, idx_j) } 
+            else         { (self.data[0],         0, idx_j) }
+        };
         while j > i {
             sum += self.data[j];
             j   -= lsb_usize!(j);
@@ -188,8 +201,7 @@ where
     /// Find the largest index with `.prefix_sum(index) <= value`.
     /// NOTE: Requires all values are non-negative.
     ///
-    pub fn rank_query(&self, value: T) -> usize
-    {
+    pub fn rank_query(&self, value: T) -> usize {
         debug_assert!(self.data.iter().all(|&n| n >= T::default()),
                       "All elements must be non-negative to use this feature.");
         let mut i = 0;
@@ -212,8 +224,7 @@ where
     /// value.
     /// NOTE: This also requires all values non-negative.
     ///
-    pub fn min_rank_query(&self, value: T) -> usize
-    {
+    pub fn min_rank_query(&self, value: T) -> usize {
         debug_assert!(self.data.iter().all(|&n| n >= T::default()), 
                       "All elements must be non-negative to use this feature.");
         if value <= self.data[0] {
