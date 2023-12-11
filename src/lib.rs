@@ -11,6 +11,7 @@
 //! Wikipedia article: <https://en.wikipedia.org/wiki/Fenwick_tree>
 //!
 
+use std::iter::{FromIterator, IntoIterator};
 use std::ops::Add;
 use std::ops::Sub;
 use std::ops::AddAssign;
@@ -98,18 +99,6 @@ where
         Fenwick { data, size }
     }
 
-    /// Creates a new Fenwick instance from the provided iterable. The data in
-    /// the iterable itself doesn't need to be in accumulated prefix sum form.
-    /// It should just be an iterable producing unsummed values. This function 
-    /// has `O(n)` time-complexity.
-    /// 
-    pub fn from_iter<I>(iter: I) -> Self
-    where
-        I: IntoIterator<Item = T>,
-    {
-        Self::from_vec(iter.into_iter().collect::<Vec<T>>())
-    }
-    
     /// Returns the sum of the first `idx` elements (indices 0 to `idx`)
     /// Equivalent to `.range_sum(0, idx)`. Range inclusive, [0..idx].
     ///
@@ -282,6 +271,101 @@ where
                 i
             }
         }
+    }
+}
+
+impl<T> From<Vec<T>> for Fenwick<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    fn from(vec: Vec<T>) -> Self {
+        Self::from_vec(vec)
+    }
+}
+
+impl<T> FromIterator<T> for Fenwick<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+    {
+        Self::from_vec(iter.into_iter().collect::<Vec<T>>())
+    }
+}
+
+pub struct FenwickIntoIter<T> {
+    fw  : Fenwick<T>,
+    idx : usize,
+}
+
+impl<T> Iterator for FenwickIntoIter<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    type Item = T;
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx <= self.fw.end() {
+            let idx = self.idx;
+            self.idx += 1;
+            Some(self.fw.get(idx))
+        } else {
+            None
+        }
+    }
+}
+
+impl<T> IntoIterator for Fenwick<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    type Item = T;
+    type IntoIter = FenwickIntoIter<T>;
+    
+    fn into_iter(self) -> Self::IntoIter {
+        FenwickIntoIter { fw: self, idx: 0 }
+    }
+}
+
+pub struct FenwickIter<'a, T> {
+    fw  : &'a Fenwick<T>,
+    idx : usize,
+}
+
+impl<'a, T> Iterator for FenwickIter<'a, T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    type Item = T;
+    
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.idx <= self.fw.end() {
+            let idx = self.idx;
+            self.idx += 1;
+            Some(self.fw.get(idx))
+        } else {
+            None
+        }
+    }
+}
+
+impl<'a, T> IntoIterator for &'a Fenwick<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    type Item = T;
+    type IntoIter = FenwickIter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        FenwickIter { fw: self, idx: 0 }
     }
 }
 
