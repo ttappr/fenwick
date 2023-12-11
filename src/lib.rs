@@ -320,7 +320,7 @@ where
     type Item = T;
     
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx <= self.fw.end() {
+        if self.idx < self.fw.end() {
             self.idx += 1;
             Some(self.fw.get(self.idx - 1))
         } else {
@@ -355,7 +355,7 @@ where
     type Item = T;
     
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx <= self.fw.end() {
+        if self.idx < self.fw.end() {
             self.idx += 1;
             Some(self.fw.get(self.idx - 1))
         } else {
@@ -519,6 +519,64 @@ mod tests {
 
         assert_eq!(fw.min_rank_query(10), 7);
         assert_eq!(fw.min_rank_query(11), 7);
+    }
+
+    #[test]
+    fn iterators() {
+        let mut fw = Fenwick::new(8);
+        fw.add(0, 1);  // sum = 1
+        fw.add(1, 1);  // sum = 2 
+        fw.add(2, 3);  // sum = 5
+        fw.add(3, 1);  // sum = 6
+        fw.add(4, 1);  // sum = 7
+        
+        let mut iter = fw.iter();
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), None);
+        
+        let mut iter = fw.into_iter();
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(3));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(1));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn from_iterator() {
+        let fw = Fenwick::from_iter(vec![1, 1, 3, 1, 1, 0, 0, 0]);
+        assert_eq!(fw.prefix_sum(3), 6);
+        assert_eq!(fw.prefix_sum(4), 7);
+        assert_eq!(fw.prefix_sum(5), 7);
+        assert_eq!(fw.prefix_sum(6), 7);
+        assert_eq!(fw.prefix_sum(7), 7);
+
+        let fw = vec![1, 1, 3, 1, 1, 0, 0, 0, 0]
+                    .into_iter().collect::<Fenwick<i32>>();
+        assert_eq!(fw.prefix_sum(3), 6);
+        assert_eq!(fw.prefix_sum(4), 7);
+        assert_eq!(fw.prefix_sum(5), 7);
+        assert_eq!(fw.prefix_sum(6), 7);
+        assert_eq!(fw.prefix_sum(7), 7);
+
+        let fw: Fenwick<_> = vec![1, 1, 3, 1, 1, 0, 0, 0, 0].into();
+        assert_eq!(fw.prefix_sum(3), 6);
+        assert_eq!(fw.prefix_sum(4), 7);
+        assert_eq!(fw.prefix_sum(5), 7);
+        assert_eq!(fw.prefix_sum(6), 7);
+        assert_eq!(fw.prefix_sum(7), 7);
+
     }
 }
 
