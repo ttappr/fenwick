@@ -56,7 +56,7 @@ where
     /// It should just be a slice of unsummed values. This function has `O(n)`
     /// time-complexity.
     ///
-    pub fn from_slice(slice: &[T]) -> Self {
+    fn from_slice(slice: &[T]) -> Self {
         // Ensure size is 1 plus a power of 2.
         let n_bits = (slice.len() as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
@@ -283,6 +283,16 @@ where
 {
     fn from(vec: Vec<T>) -> Self {
         Self::from_vec(vec)
+    }
+}
+
+impl<T> From<&[T]> for Fenwick<T>
+where
+    T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
+       Default + Copy, 
+{
+    fn from(slice: &[T]) -> Self {
+        Self::from_slice(slice)
     }
 }
 
