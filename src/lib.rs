@@ -99,6 +99,14 @@ where
         Fenwick { data, size }
     }
 
+    /// Returns a non-consuming iterator over the Fenwick Tree. The iterator 
+    /// will return the prefix sum of each element in the tree. The iterator 
+    /// iterates each element with `O(log(n))` time-complexity.
+    /// 
+    pub fn iter(&self) -> FenwickIter<T> {
+        self.into_iter()
+    }
+
     /// Returns the sum of the first `idx` elements (indices 0 to `idx`)
     /// Equivalent to `.range_sum(0, idx)`. Range inclusive, [0..idx].
     ///
