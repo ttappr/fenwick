@@ -214,20 +214,12 @@ where
     /// faster.
     /// 
     pub fn range_sum2(&self, idx_i: usize, idx_j: usize) -> T {
-        debug_assert!(idx_i < idx_j && idx_j <= self.end());
-        let (mut sum, mut i, mut j) = {
-            if idx_i > 0 { (T::default(), idx_i - 1, idx_j - 1) } 
-            else         { (self.data[0],         0, idx_j - 1) }
-        };
-        while j > i {
-            sum += self.data[j];
-            j   -= lsb_usize!(j);
+        debug_assert!(idx_i <= idx_j && idx_j <= self.end());
+        if idx_i == idx_j {
+            T::default()
+        } else {
+            self.range_sum(idx_i, idx_j - 1)
         }
-        while i > j {
-            sum -= self.data[i];
-            i   -= lsb_usize!(i);
-        }
-        sum
     }
 
     /// Find the largest index with `.prefix_sum(index) <= value`.
@@ -477,6 +469,23 @@ mod tests {
         assert_eq!(fw.range_sum(2, 2), 3);
     }
     
+    #[test] 
+    fn range_sum2() {
+        let mut fw = Fenwick::new(8);
+        fw.add(0, 1);  // sum = 1
+        fw.add(1, 1);  // sum = 2 
+        fw.add(2, 3);  // sum = 5
+        fw.add(3, 1);  // sum = 6
+        fw.add(4, 1);  // sum = 7
+        
+        assert_eq!(fw.range_sum2(1, 3), 4);
+        assert_eq!(fw.range_sum2(0, 3), 5);
+        
+        assert_eq!(fw.range_sum2(2, 4), 4);
+        assert_eq!(fw.range_sum2(0, 0), 0);
+        assert_eq!(fw.range_sum2(2, 2), 0);
+    }
+
     #[test]
     fn rank_query() {
         let mut fw = Fenwick::new(8);
