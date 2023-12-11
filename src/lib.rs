@@ -210,6 +210,27 @@ where
         sum
     }
     
+    /// Returns the sum of elements from `idx_i` to `idx_j` non-inclusive, 
+    /// Similar to `.prefix_sum(idx_j - 1) - .prefix_sum(idx_i - 1)`, but
+    /// faster.
+    /// 
+    pub fn range_sum2(&self, idx_i: usize, idx_j: usize) -> T {
+        debug_assert!(idx_i < idx_j && idx_j <= self.end());
+        let (mut sum, mut i, mut j) = {
+            if idx_i > 0 { (T::default(), idx_i - 1, idx_j - 1) } 
+            else         { (self.data[0],         0, idx_j - 1) }
+        };
+        while j > i {
+            sum += self.data[j];
+            j   -= lsb_usize!(j);
+        }
+        while i > j {
+            sum -= self.data[i];
+            i   -= lsb_usize!(i);
+        }
+        sum
+    }
+
     /// Find the largest index with `.prefix_sum(index) <= value`.
     /// NOTE: Requires all values are non-negative.
     ///
