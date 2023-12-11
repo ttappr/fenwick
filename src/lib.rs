@@ -37,7 +37,8 @@ pub struct Fenwick<T> {
 impl<T> Fenwick<T>
 where 
     T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
-       Default + Copy, {
+       Default + Copy, 
+{
     /// Creates a new Fenwick Tree for use in calculating and updating
     /// prefix sums. The size is adjusted to be 1 + a power of 2 if it already
     /// isn't.
@@ -78,7 +79,8 @@ where
     /// Creates a new Fenwick instance from the provided vector. The data in 
     /// the vector itself doesn't need to be in accumulated prefix sum form.
     /// It should just be a vector of unsummed values. This function has `O(n)`
-    /// time-complexity.
+    /// time-complexity. The vector passed in is incorporated directly into the
+    /// tree without copying.
     ///
     pub fn from_vec(vec: Vec<T>) -> Self {
         // Ensure size is 1 plus a power of 2.
@@ -101,7 +103,7 @@ where
 
     /// Returns a non-consuming iterator over the Fenwick Tree. The iterator 
     /// will return the prefix sum of each element in the tree. The iterator 
-    /// iterates each element with `O(log(n))` time-complexity.
+    /// iterates over elements with `O(log(n))` time-complexity each.
     /// 
     pub fn iter(&self) -> FenwickIter<T> {
         self.into_iter()
@@ -321,7 +323,7 @@ where
         if self.idx <= self.fw.end() {
             let idx = self.idx;
             self.idx += 1;
-            Some(self.fw.get(idx))
+            Some(self.fw.get(idx - 1))
         } else {
             None
         }
@@ -357,7 +359,7 @@ where
         if self.idx <= self.fw.end() {
             let idx = self.idx;
             self.idx += 1;
-            Some(self.fw.get(idx))
+            Some(self.fw.get(idx - 1))
         } else {
             None
         }
