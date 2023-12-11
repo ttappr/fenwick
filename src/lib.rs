@@ -82,7 +82,7 @@ where
     /// time-complexity. The vector passed in is incorporated directly into the
     /// tree without copying.
     ///
-    pub fn from_vec(vec: Vec<T>) -> Self {
+    fn from_vec(vec: Vec<T>) -> Self {
         // Ensure size is 1 plus a power of 2.
         let n_bits = (vec.len() as f64).log(2_f64).ceil();
         let size   = 2_usize.pow(n_bits as u32) + 1_usize;
