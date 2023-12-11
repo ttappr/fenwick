@@ -73,7 +73,7 @@ where
         }
         Fenwick { data, size }
     }
-
+    
     /// Creates a new Fenwick instance from the provided vector. The data in 
     /// the vector itself doesn't need to be in accumulated prefix sum form.
     /// It should just be a vector of unsummed values. This function has `O(n)`
@@ -96,6 +96,18 @@ where
             }
         }
         Fenwick { data, size }
+    }
+
+    /// Creates a new Fenwick instance from the provided iterable. The data in
+    /// the iterable itself doesn't need to be in accumulated prefix sum form.
+    /// It should just be an iterable producing unsummed values. This function 
+    /// has `O(n)` time-complexity.
+    /// 
+    pub fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+    {
+        Self::from_vec(iter.into_iter().collect::<Vec<T>>())
     }
     
     /// Returns the sum of the first `idx` elements (indices 0 to `idx`)
