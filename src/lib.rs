@@ -321,9 +321,8 @@ where
     
     fn next(&mut self) -> Option<Self::Item> {
         if self.idx <= self.fw.end() {
-            let idx = self.idx;
             self.idx += 1;
-            Some(self.fw.get(idx - 1))
+            Some(self.fw.get(self.idx - 1))
         } else {
             None
         }
@@ -357,9 +356,8 @@ where
     
     fn next(&mut self) -> Option<Self::Item> {
         if self.idx <= self.fw.end() {
-            let idx = self.idx;
             self.idx += 1;
-            Some(self.fw.get(idx - 1))
+            Some(self.fw.get(self.idx - 1))
         } else {
             None
         }
