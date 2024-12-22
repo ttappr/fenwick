@@ -19,11 +19,7 @@ use std::ops::SubAssign;
 use std::cmp::Ord;
 
 macro_rules! lsb {
-    ($i:expr) => (($i) & -($i))
-}
-
-macro_rules! lsb_usize {
-    ($i:expr) => { lsb!($i as isize) as usize }
+    ($i:expr) => { $i & $i.wrapping_neg() }
 }
 
 /// Represents a prefix sum array with `O(log n)` update operations.
@@ -67,7 +63,7 @@ where
         data.resize(size, T::default());
         
         for i in 1..size {
-            let j = i + lsb_usize!(i);
+            let j = i + lsb!(i);
             if j < size {
                 let d = data[i];
                 data[j] += d;
@@ -92,7 +88,7 @@ where
         data.resize(size, T::default());
         
         for i in 1..size {
-            let j = i + lsb_usize!(i);
+            let j = i + lsb!(i);
             if j < size {
                 let d = data[i];
                 data[j] += d;
@@ -118,7 +114,7 @@ where
         let mut i   = idx;
         while i != 0 { 
             sum += self.data[i];
-            i   -= lsb_usize!(i);
+            i   -= lsb!(i);
         }
         sum
     }
@@ -146,7 +142,7 @@ where
             let mut i = idx;
             while i < self.size {
                 self.data[i] += delta;
-                i += lsb_usize!(i);
+                i += lsb!(i);
             }
         }
     }
@@ -161,7 +157,7 @@ where
             let mut i = idx;
             while i < self.size {
                 self.data[i] -= delta;
-                i += lsb_usize!(i);
+                i += lsb!(i);
             }
         }
     }
@@ -200,11 +196,11 @@ where
         };
         while j > i {
             sum += self.data[j];
-            j   -= lsb_usize!(j);
+            j   -= lsb!(j);
         }
         while i > j {
             sum -= self.data[i];
-            i   -= lsb_usize!(i);
+            i   -= lsb!(i);
         }
         sum
     }
@@ -261,9 +257,9 @@ where
             while i & 0x01 == 0 {
                 if d < v {
                     v -= d;
-                    i += lsb_usize!(i >> 1);
+                    i += lsb!(i >> 1);
                 } else {
-                    i -= lsb_usize!(i >> 1);
+                    i -= lsb!(i >> 1);
                 }
                 d = self.data[i];
             }
