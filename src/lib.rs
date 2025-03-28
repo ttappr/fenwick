@@ -12,10 +12,7 @@
 //!
 
 use std::iter::{FromIterator, IntoIterator};
-use std::ops::Add;
-use std::ops::Sub;
-use std::ops::AddAssign;
-use std::ops::SubAssign;
+use std::ops::{Add, Sub, AddAssign, SubAssign}; 
 use std::cmp::Ord;
 
 macro_rules! lsb {
@@ -77,19 +74,19 @@ where
     /// tree without copying.
     ///
     fn from_vec(data: Vec<T>) -> Self {
-        let max_idx_msb = msb(data.len());
-        let len         = data.len();
+        let size        = data.len();
+        let max_idx_msb = msb(size);
 
         let mut data = data;
         
-        for i in 1..=len {
+        for i in 1..=size {
             let j = i + lsb!(i);
-            if j <= data.len() {
+            if j <= size {
                 let d = data[i - 1];
                 data[j - 1] += d;
             }
         }
-        Fenwick { data, max_idx_msb, size: len }
+        Fenwick { data, max_idx_msb, size }
     }
 
     /// Returns a non-consuming iterator over the Fenwick Tree. The iterator 
@@ -104,7 +101,7 @@ where
     /// Equivalent to `.range_sum(0, idx)`. Range inclusive, [0..idx].
     ///
     pub fn prefix_sum(&self, idx: usize) -> T {
-        debug_assert!(idx < self.len());
+        debug_assert!(idx < self.size);
         let mut idx = idx + 1;
         let mut sum = T::default();
         while idx > 0 {
@@ -130,9 +127,9 @@ where
     /// Add `delta` to element with index `idx` (zero-based).
     ///
     pub fn add(&mut self, idx: usize, delta: T) {
-        debug_assert!(idx < self.len());
+        debug_assert!(idx < self.size);
         let mut idx = idx + 1;
-        while idx <= self.data.len() {
+        while idx <= self.size {
             self.data[idx - 1] += delta;
             idx += lsb!(idx);
         }
@@ -141,9 +138,9 @@ where
     /// Subtract `delta` from element with index `idx`.
     /// 
     pub fn sub(&mut self, idx: usize, delta: T) {
-        debug_assert!(idx < self.len());
+        debug_assert!(idx < self.size);
         let mut idx = idx + 1;
-        while idx <= self.data.len() {
+        while idx <= self.size {
             self.data[idx - 1] -= delta;
             idx += lsb!(idx);
         }
@@ -152,7 +149,7 @@ where
     /// Set (as opposed to adjust) a single element's value.
     ///
     pub fn set(&mut self, idx: usize, value: T) {
-        debug_assert!(idx < self.len());
+        debug_assert!(idx < self.size);
         let cur_val = self.get(idx);
         if cur_val <= value {
             self.add(idx, value - cur_val);
@@ -164,7 +161,7 @@ where
     /// Return a single element's value.
     ///
     pub fn get(&self, idx: usize) -> T {
-        debug_assert!(idx < self.len());
+        debug_assert!(idx < self.size);
         self.range_sum(idx, idx)
     }
     
@@ -172,7 +169,7 @@ where
     /// to `.prefix_sum(idx_j) - .prefix_sum(idx_i - 1)`, but faster.
     ///
     pub fn range_sum(&self, start: usize, end: usize) -> T {
-        debug_assert!(start <= end && end < self.len());
+        debug_assert!(start <= end && end < self.size);
         let mut sum = T::default();
         let mut i   = start;
         let mut j   = end + 1;
@@ -198,7 +195,7 @@ where
         let mut v = value;
         
         while j > 0 {
-            if i + j <= self.data.len() && self.data[i + j - 1] < v {
+            if i + j <= self.size && self.data[i + j - 1] < v {
                 v -= self.data[i + j - 1];
                 i += j;
             }
@@ -216,22 +213,20 @@ where
     pub fn min_rank_query(&self, value: T) -> Option<usize> {
         debug_assert!(self.data.iter().all(|&n| n >= T::default()), 
                       "All elements must be non-negative to use this feature.");
-        let mut sum   = T::default();
-        let mut index = 0;
-        let mut step  = self.max_idx_msb;
+        let mut v = T::default();
+        let mut i = 0;
+        let mut step = self.max_idx_msb;
 
         while step > 0 {
-            let next_idx = index + step;
+            let j = i + step;
             
-            if next_idx <= self.data.len() 
-                && sum + self.data[next_idx - 1] < value
-            {
-                sum += self.data[next_idx - 1];
-                index = next_idx;
+            if j <= self.size && v + self.data[j - 1] < value {
+                v += self.data[j - 1];
+                i = j;
             }
             step >>= 1;
         }
-        if index < self.data.len() { Some(index) } else { None}
+        if i < self.size { Some(i) } else { None }
     }
 }
 
