@@ -117,7 +117,7 @@ where
     /// Returns the total prefix sum of all the elements.
     ///
     pub fn total(&self) -> T {
-        self.prefix_sum(self.len() - 1)
+        self.data[self.max_idx_msb - 1]
     }
     
     /// Returns the index of the last element. This can be used as a parameter
@@ -424,6 +424,8 @@ mod tests {
         fw.add(2, 3);  // sum = 5
         fw.add(3, 1);  // sum = 6
         fw.add(4, 1);  // sum = 7
+
+        assert_eq!(fw.total(), 7);
         
         assert_eq!(fw.range_sum(1, 3), 5);
         assert_eq!(fw.range_sum(0, 3), 6);
