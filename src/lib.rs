@@ -1,12 +1,6 @@
 
 //! A generic implementation for a Fenwick Tree, useful for managing prefix
-//! sums. Each operation has `O(log n)` time-complexity. Some operations like
-//! `.end()` have `O(1)` time-complexity.
-//!
-//! The code was originally taken from the Wikipedia article on Fenwick Trees 
-//! and modified to create a class. The code has also been modified so the 
-//! tree is 0-based despite being taken from a 1-based implementation 
-//! originally.
+//! sums. Most operations have `O(log n)` time-complexity.
 //!
 //! Wikipedia article: <https://en.wikipedia.org/wiki/Fenwick_tree>
 //!
@@ -115,11 +109,10 @@ where
     /// Returns the total prefix sum of all the elements.
     ///
     pub fn total(&self) -> T {
-        self.data[self.max_idx_msb - 1]
+        self.prefix_sum(self.size - 1)
     }
     
-    /// Returns the index of the last element. This can be used as a parameter
-    /// to `.range_sum()` or other methods.
+    /// Returns the length of the prefix sum aray.
     ///
     pub fn len(&self) -> usize {
         self.size
@@ -166,8 +159,7 @@ where
         self.range_sum(idx, idx)
     }
     
-    /// Returns the sum of elements from `idx_i` to `idx_j` inclusive, Similar 
-    /// to `.prefix_sum(idx_j) - .prefix_sum(idx_i - 1)`, but faster.
+    /// Returns the sum of elements from `start` to `end` inclusive.
     ///
     pub fn range_sum(&self, start: usize, end: usize) -> T {
         debug_assert!(start <= end && end < self.size);
@@ -281,7 +273,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         if self.idx < self.fw.len() {
             self.idx += 1;
-            Some(self.fw.get(self.idx - 1))
+            Some(self.fw.prefix_sum(self.idx - 1))
         } else {
             None
         }
@@ -316,7 +308,7 @@ where
     fn next(&mut self) -> Option<Self::Item> {
         if self.idx < self.fw.len() {
             self.idx += 1;
-            Some(self.fw.get(self.idx - 1))
+            Some(self.fw.prefix_sum(self.idx - 1))
         } else {
             None
         }
@@ -396,7 +388,7 @@ mod tests {
         
         fw.set(1, 0);
         assert_eq!(fw.get(1), 0);
-        //assert_eq!(fw.prefix_sum(8), 5);
+        assert_eq!(fw.prefix_sum(7), 5);
         
         assert_eq!(fw.get(0), 5);
         fw.set(0, 4);
@@ -478,6 +470,22 @@ mod tests {
     }
 
     #[test]
+    fn total() {
+        
+        let mut fw = Fenwick::new(7);
+        fw.add(0, 1);  // sum = 1
+        fw.add(1, 1);  // sum = 2 
+        fw.add(2, 3);  // sum = 5
+        fw.add(3, 1);  // sum = 6
+        fw.add(4, 1);  // sum = 7
+        
+        assert_eq!(fw.total(), 7);
+        
+        fw.set(0, 0);  // Should reduce total to 6.
+        assert_eq!(fw.total(), 6);
+    }
+
+    #[test]
     fn iterators() {
         let mut fw = Fenwick::new(8);
         fw.add(0, 1);  // sum = 1
@@ -488,24 +496,24 @@ mod tests {
         
         let mut iter = fw.iter();
         assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(3));
-        assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(0));
-        assert_eq!(iter.next(), Some(0));
-        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(5));
+        assert_eq!(iter.next(), Some(6));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(7));
         assert_eq!(iter.next(), None);
         
         let mut iter = fw.into_iter();
         assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(3));
-        assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(1));
-        assert_eq!(iter.next(), Some(0));
-        assert_eq!(iter.next(), Some(0));
-        assert_eq!(iter.next(), Some(0));
+        assert_eq!(iter.next(), Some(2));
+        assert_eq!(iter.next(), Some(5));
+        assert_eq!(iter.next(), Some(6));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(7));
+        assert_eq!(iter.next(), Some(7));
         assert_eq!(iter.next(), None);
     }
 
