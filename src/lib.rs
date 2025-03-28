@@ -56,15 +56,16 @@ where
     ///
     fn from_slice(slice: &[T]) -> Self {
         let mut data = slice.to_vec();
+        let     size = data.len();
         
-        for i in 1..=data.len() {
+        for i in 1..=size {
             let j = i + lsb!(i);
-            if j <= data.len() {
+            if j <= size {
                 let d = data[i - 1];
                 data[j - 1] += d;
             }
         }
-        Fenwick { data, max_idx_msb: msb(slice.len()), size: slice.len() }
+        Fenwick { data, max_idx_msb: msb(size), size }
     }
     
     /// Creates a new Fenwick instance from the provided vector. The data in 
@@ -190,16 +191,17 @@ where
     pub fn rank_query(&self, value: T) -> Option<usize> {
         debug_assert!(self.data.iter().all(|&n| n >= T::default()),
                       "All elements must be non-negative to use this feature.");
-        let mut i = 0;
-        let mut j = self.max_idx_msb;
-        let mut v = value;
+
+        let mut step = self.max_idx_msb;
+        let mut i    = 0;
+        let mut v    = value;
         
-        while j > 0 {
-            if i + j <= self.size && self.data[i + j - 1] < v {
-                v -= self.data[i + j - 1];
-                i += j;
+        while step > 0 {
+            if i + step <= self.size && self.data[i + step - 1] < v {
+                v -= self.data[i + step - 1];
+                i += step;
             }
-            j >>= 1;
+            step >>= 1;
         }
         if i == 0 && self.data[0] > value { None } else { Some(i) }
     }
@@ -213,9 +215,10 @@ where
     pub fn min_rank_query(&self, value: T) -> Option<usize> {
         debug_assert!(self.data.iter().all(|&n| n >= T::default()), 
                       "All elements must be non-negative to use this feature.");
-        let mut v = T::default();
-        let mut i = 0;
+
         let mut step = self.max_idx_msb;
+        let mut i    = 0;
+        let mut v    = T::default();
 
         while step > 0 {
             let j = i + step;
