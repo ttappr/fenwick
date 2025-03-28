@@ -1,13 +1,10 @@
 # fenwick
 
-A simple generic implementation for a Fenwick Tree.
+A simple generic implementation of a 0-based Fenwick Tree (or BITS).
 
 Fenwick Trees are useful where a prefix sum is required but updating it is too 
 costly. The Fenwick Tree balances out the costs of update and query operations,
 each with `O(log n)` time complexity.
-
-This implementation has 0-based indexing, despite having been derived from the 
-tree's 1-based version.
 
 Some functions include `debug_assert`'s to ensure parameters are within range.
 `.rank_query()` and `.min_rank_query()` have debug asserts to ensure all 
@@ -22,12 +19,12 @@ performance.
  * `from_slice(<slice>)` - Create a new tree from a slice. An `O(n)` operation.
  * `prefix_sum(<idx>)` - Get the prefix sum of all elements up to idx inclusive.
  * `end()` - The index of the array's last element.
- * `total()` - The prefix sum of all elements - an `O(1)` operation.
+ * `total()` - The prefix sum of all elements.
  * `add(<idx>, <delta>)` - Add delta to element at idx.
  * `sub(<idx>, <delta>)` - Subtract delta from element at idx.
  * `set(<idx>, <value>)` - Set element at idx to value.
  * `get(<idx>)` - Get value of element at idx.
- * `range_sum(<idx_i>, <idx_j>)` - Get sum of elements from idx_i to idx_j 
+ * `range_sum(<start>, <end>)` - Get sum of elements from start to end 
  inclusive.
  * `rank_query(<value>)` - Find the largest index with 
  `.prefix_sum(index) <= value`.

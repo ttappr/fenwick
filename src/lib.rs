@@ -1,6 +1,6 @@
 
-//! A generic implementation for a Fenwick Tree, useful for managing prefix
-//! sums. Most operations have `O(log n)` time-complexity.
+//! A generic 0-based implementation for a Fenwick Tree, useful for managing 
+//! prefix sums. Most operations have `O(log n)` time-complexity.
 //!
 //! Wikipedia article: <https://en.wikipedia.org/wiki/Fenwick_tree>
 //!
@@ -177,7 +177,8 @@ where
         sum
     }
 
-    /// Find the largest index with `.prefix_sum(index) <= value`.
+    /// Find the largest index with `.prefix_sum(index) <= value`. If there is 
+    /// no such index, it returns `None`. 
     /// NOTE: Requires all values are non-negative.
     ///
     pub fn rank_query(&self, value: T) -> Option<usize> {
@@ -199,9 +200,8 @@ where
     }
     
     /// Find the smallest index with `.prefix_sum(index) >= value` - if there is
-    /// an index where the prefix sum is >= value; however, if not the case,
-    /// this method will return the index of the last element with a non-0 
-    /// value.
+    /// an index where the prefix sum is >= value. If no such index exists, it 
+    /// returns `None`.
     /// NOTE: This also requires all values non-negative.
     ///
     pub fn min_rank_query(&self, value: T) -> Option<usize> {
