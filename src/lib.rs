@@ -350,9 +350,9 @@ mod tests {
         fw.add(1, 1);
         assert_eq!(fw.prefix_sum(2), 3); // Range is inclusive.
         
-        assert_eq!(fw.prefix_sum(fw.len() - 1), 3);
+        assert_eq!(fw.total(), 3);
         fw.add(fw.len() - 1, 3);
-        assert_eq!(fw.prefix_sum(fw.len() - 1), 6);
+        assert_eq!(fw.total(), 6);
         assert_eq!(fw.prefix_sum(fw.len() - 2), 3);
     }
     
