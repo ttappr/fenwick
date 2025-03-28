@@ -31,6 +31,7 @@ fn msb(n: usize) -> usize {
 #[derive(Debug)]
 pub struct Fenwick<T> {
     data         : Vec<T>,
+    size         : usize,
     max_idx_msb  : usize,
 }
 
@@ -44,7 +45,11 @@ where
     /// isn't.
     ///
     pub fn new(size: usize) -> Self {
-        Fenwick { data: vec![T::default(); size], max_idx_msb: msb(size) }
+        Fenwick { 
+            data        : vec![T::default(); size], 
+            size,
+            max_idx_msb : msb(size), 
+        }
     }
     
     /// Creates a new Fenwick instance from the provided slice. The data in 
@@ -62,7 +67,7 @@ where
                 data[j - 1] += d;
             }
         }
-        Fenwick { data, max_idx_msb: msb(slice.len()) }
+        Fenwick { data, max_idx_msb: msb(slice.len()), size: slice.len() }
     }
     
     /// Creates a new Fenwick instance from the provided vector. The data in 
@@ -73,16 +78,18 @@ where
     ///
     fn from_vec(data: Vec<T>) -> Self {
         let max_idx_msb = msb(data.len());
+        let len         = data.len();
+
         let mut data = data;
         
-        for i in 1..=data.len() {
+        for i in 1..=len {
             let j = i + lsb!(i);
             if j <= data.len() {
                 let d = data[i - 1];
                 data[j - 1] += d;
             }
         }
-        Fenwick { data, max_idx_msb }
+        Fenwick { data, max_idx_msb, size: len }
     }
 
     /// Returns a non-consuming iterator over the Fenwick Tree. The iterator 
@@ -97,7 +104,7 @@ where
     /// Equivalent to `.range_sum(0, idx)`. Range inclusive, [0..idx].
     ///
     pub fn prefix_sum(&self, idx: usize) -> T {
-        debug_assert!(idx <= self.end());
+        debug_assert!(idx < self.len());
         let mut idx = idx + 1;
         let mut sum = T::default();
         while idx > 0 {
@@ -110,20 +117,20 @@ where
     /// Returns the total prefix sum of all the elements.
     ///
     pub fn total(&self) -> T {
-        self.prefix_sum(self.end())
+        self.prefix_sum(self.len() - 1)
     }
     
     /// Returns the index of the last element. This can be used as a parameter
     /// to `.range_sum()` or other methods.
     ///
-    pub fn end(&self) -> usize {
-        self.data.len() - 1
+    pub fn len(&self) -> usize {
+        self.size
     }
     
     /// Add `delta` to element with index `idx` (zero-based).
     ///
     pub fn add(&mut self, idx: usize, delta: T) {
-        debug_assert!(idx <= self.end());
+        debug_assert!(idx < self.len());
         let mut idx = idx + 1;
         while idx <= self.data.len() {
             self.data[idx - 1] += delta;
@@ -134,7 +141,7 @@ where
     /// Subtract `delta` from element with index `idx`.
     /// 
     pub fn sub(&mut self, idx: usize, delta: T) {
-        debug_assert!(idx <= self.end());
+        debug_assert!(idx < self.len());
         let mut idx = idx + 1;
         while idx <= self.data.len() {
             self.data[idx - 1] -= delta;
@@ -145,7 +152,7 @@ where
     /// Set (as opposed to adjust) a single element's value.
     ///
     pub fn set(&mut self, idx: usize, value: T) {
-        debug_assert!(idx <= self.end());
+        debug_assert!(idx < self.len());
         let cur_val = self.get(idx);
         if cur_val <= value {
             self.add(idx, value - cur_val);
@@ -157,7 +164,7 @@ where
     /// Return a single element's value.
     ///
     pub fn get(&self, idx: usize) -> T {
-        debug_assert!(idx <= self.end());
+        debug_assert!(idx < self.len());
         self.range_sum(idx, idx)
     }
     
@@ -165,7 +172,7 @@ where
     /// to `.prefix_sum(idx_j) - .prefix_sum(idx_i - 1)`, but faster.
     ///
     pub fn range_sum(&self, start: usize, end: usize) -> T {
-        debug_assert!(start <= end && end <= self.end());
+        debug_assert!(start <= end && end < self.len());
         let mut sum = T::default();
         let mut i   = start;
         let mut j   = end + 1;
@@ -183,12 +190,12 @@ where
     /// Find the largest index with `.prefix_sum(index) <= value`.
     /// NOTE: Requires all values are non-negative.
     ///
-    pub fn rank_query(&self, value: T) -> usize {
+    pub fn rank_query(&self, value: T) -> Option<usize> {
         debug_assert!(self.data.iter().all(|&n| n >= T::default()),
                       "All elements must be non-negative to use this feature.");
         let mut i = 0;
-        let mut j = self.data.len(); //self.msb;
-        let mut v = value; // - self.data[0];
+        let mut j = self.max_idx_msb;
+        let mut v = value;
         
         while j > 0 {
             if i + j <= self.data.len() && self.data[i + j - 1] < v {
@@ -197,7 +204,7 @@ where
             }
             j >>= 1;
         }
-        i
+        if i == 0 && self.data[0] > value { None } else { Some(i) }
     }
     
     /// Find the smallest index with `.prefix_sum(index) >= value` - if there is
@@ -274,7 +281,7 @@ where
     type Item = T;
     
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx <= self.fw.end() {
+        if self.idx < self.fw.len() {
             self.idx += 1;
             Some(self.fw.get(self.idx - 1))
         } else {
@@ -309,7 +316,7 @@ where
     type Item = T;
     
     fn next(&mut self) -> Option<Self::Item> {
-        if self.idx <= self.fw.end() {
+        if self.idx < self.fw.len() {
             self.idx += 1;
             Some(self.fw.get(self.idx - 1))
         } else {
@@ -343,10 +350,10 @@ mod tests {
         fw.add(1, 1);
         assert_eq!(fw.prefix_sum(2), 3); // Range is inclusive.
         
-        assert_eq!(fw.prefix_sum(fw.end()), 3);
-        fw.add(fw.end(), 3);
-        assert_eq!(fw.prefix_sum(fw.end()), 6);
-        assert_eq!(fw.prefix_sum(fw.end() - 1), 3);
+        assert_eq!(fw.prefix_sum(fw.len() - 1), 3);
+        fw.add(fw.len() - 1, 3);
+        assert_eq!(fw.prefix_sum(fw.len() - 1), 6);
+        assert_eq!(fw.prefix_sum(fw.len() - 2), 3);
     }
     
     #[test]
@@ -378,7 +385,7 @@ mod tests {
         fw.add(1, 4);
         assert_eq!(fw.get(1), 4);
         assert_eq!(fw.get(0), 5);
-        assert_eq!(fw.get(fw.end()), 0);
+        assert_eq!(fw.get(fw.len() - 1), 0);
     }
     
     #[test]
@@ -397,9 +404,9 @@ mod tests {
         fw.set(0, 4);
         assert_eq!(fw.get(0), 4);
 
-        fw.set(fw.end(), 3);
-        assert_eq!(fw.get(fw.end()), 3);
-        assert_eq!(fw.prefix_sum(fw.end()), 7);
+        fw.set(fw.len() - 1, 3);
+        assert_eq!(fw.get(fw.len() - 1), 3);
+        assert_eq!(fw.prefix_sum(fw.len() - 1), 7);
         assert_eq!(fw.total(), 7);
         
         fw.set(0, 8);
@@ -435,16 +442,16 @@ mod tests {
         fw.add(3, 1);  // sum = 6
         fw.add(4, 1);  // sum = 7
 
-        assert_eq!(fw.rank_query(0), 0);
-        assert_eq!(fw.rank_query(1), 0);
-        assert_eq!(fw.rank_query(2), 1);
-//        assert_eq!(fw.rank_query(7), 8);
+        assert_eq!(fw.rank_query(0), None);
+        assert_eq!(fw.rank_query(1), Some(0));
+        assert_eq!(fw.rank_query(2), Some(1));
+        assert_eq!(fw.rank_query(7), Some(4));
         
-        assert_eq!(fw.rank_query(5), 2);
-        assert_eq!(fw.rank_query(6), 3);
+        assert_eq!(fw.rank_query(5), Some(2));
+        assert_eq!(fw.rank_query(6), Some(3));
         
         fw.set(0, 0);
-        assert_eq!(fw.rank_query(5), 3);
+        assert_eq!(fw.rank_query(5), Some(3));
     }
     
     #[test]
@@ -456,7 +463,7 @@ mod tests {
         fw.add(3, 1);  // sum = 6
         fw.add(4, 1);  // sum = 7
 
-     //   assert_eq!(fw.min_rank_query(1), Some(0));
+        assert_eq!(fw.min_rank_query(1), Some(0));
         
         assert_eq!(fw.min_rank_query(3), Some(2));  // Check basic.
         assert_eq!(fw.min_rank_query(8), None);  // Check that it falls on min.
