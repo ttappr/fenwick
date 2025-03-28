@@ -9,10 +9,12 @@ use std::iter::{FromIterator, IntoIterator};
 use std::ops::{Add, Sub, AddAssign, SubAssign}; 
 use std::cmp::Ord;
 
-macro_rules! lsb {
-    ($i:expr) => { $i & $i.wrapping_neg() }
+#[inline(always)]
+fn lsb(n: usize) -> usize {
+    n & n.wrapping_neg()
 }
 
+#[inline]
 fn msb(n: usize) -> usize {
     if n == 0 { 0 } else { 1 << n.ilog(2) }
 }
@@ -36,30 +38,40 @@ where
     /// isn't.
     ///
     pub fn new(size: usize) -> Self {
-        Fenwick { 
+        Self { 
             data        : vec![T::default(); size], 
             size,
             max_idx_msb : msb(size), 
         }
     }
     
+    /// Builds the Fenwick Tree from a given vector of unsummed values. This
+    /// function is used internally to construct the tree. It takes a vector of
+    /// unsummed values and builds the Fenwick Tree in `O(n)` time-complexity.
+    /// 
+    fn build_tree(mut data: Vec<T>) -> Vec<T> {
+        let size = data.len();
+        for i in 1..=size {
+            let j = i + lsb(i);
+            if j <= size {
+                let d = data[i - 1];
+                data[j - 1] += d;
+            }
+        }
+        data
+    }
+
     /// Creates a new Fenwick instance from the provided slice. The data in 
     /// the slice itself doesn't need to be in accumulated prefix sum form.
     /// It should just be a slice of unsummed values. This function has `O(n)`
     /// time-complexity.
     ///
     fn from_slice(slice: &[T]) -> Self {
-        let mut data = slice.to_vec();
-        let     size = data.len();
-        
-        for i in 1..=size {
-            let j = i + lsb!(i);
-            if j <= size {
-                let d = data[i - 1];
-                data[j - 1] += d;
-            }
+        Self {
+            data : Self::build_tree(slice.to_vec()),
+            size : slice.len(),
+            max_idx_msb: msb(slice.len()),
         }
-        Fenwick { data, max_idx_msb: msb(size), size }
     }
     
     /// Creates a new Fenwick instance from the provided vector. The data in 
@@ -69,19 +81,12 @@ where
     /// tree without copying.
     ///
     fn from_vec(data: Vec<T>) -> Self {
-        let size        = data.len();
-        let max_idx_msb = msb(size);
-
-        let mut data = data;
-        
-        for i in 1..=size {
-            let j = i + lsb!(i);
-            if j <= size {
-                let d = data[i - 1];
-                data[j - 1] += d;
-            }
+        let size = data.len();
+        Self {
+            data: Self::build_tree(data),
+            size,
+            max_idx_msb: msb(size),
         }
-        Fenwick { data, max_idx_msb, size }
     }
 
     /// Returns a non-consuming iterator over the Fenwick Tree. The iterator 
@@ -101,7 +106,7 @@ where
         let mut sum = T::default();
         while idx > 0 {
             sum += self.data[idx - 1];
-            idx -= lsb!(idx);
+            idx -= lsb(idx);
         }
         sum
     }
@@ -118,14 +123,15 @@ where
         self.size
     }
     
-    /// Add `delta` to element with index `idx` (zero-based).
+    /// Add `delta` to element with index `idx` (zero-based). There are two
+    /// update methods (this and `sub()`) to account for unsigned types for `T`.
     ///
     pub fn add(&mut self, idx: usize, delta: T) {
         debug_assert!(idx < self.size);
         let mut idx = idx + 1;
         while idx <= self.size {
             self.data[idx - 1] += delta;
-            idx += lsb!(idx);
+            idx += lsb(idx);
         }
     }
     
@@ -136,7 +142,7 @@ where
         let mut idx = idx + 1;
         while idx <= self.size {
             self.data[idx - 1] -= delta;
-            idx += lsb!(idx);
+            idx += lsb(idx);
         }
     }
     
@@ -168,11 +174,11 @@ where
         let mut j   = end + 1;
         while j > i {
             sum += self.data[j - 1];
-            j   -= lsb!(j);
+            j   -= lsb(j);
         }
         while i > j {
             sum -= self.data[i - 1];
-            i   -= lsb!(i);
+            i   -= lsb(i);
         }
         sum
     }
@@ -196,7 +202,7 @@ where
             }
             step >>= 1;
         }
-        if i == 0 && self.data[0] > value { None } else { Some(i) }
+        (i != 0 || self.data[0] <= value).then_some(i)
     }
     
     /// Find the smallest index with `.prefix_sum(index) >= value` - if there is
@@ -221,7 +227,7 @@ where
             }
             step >>= 1;
         }
-        if i < self.size { Some(i) } else { None }
+        (i < self.size).then_some(i)
     }
 }
 
