@@ -5,9 +5,9 @@
 //! Wikipedia article: <https://en.wikipedia.org/wiki/Fenwick_tree>
 //!
 
-use std::iter::{FromIterator, IntoIterator};
-use std::ops::{Add, Sub, AddAssign, SubAssign}; 
-use std::cmp::Ord;
+use core::iter::{FromIterator, IntoIterator};
+use core::ops::{Add, Sub, AddAssign, SubAssign}; 
+use core::cmp::Ord;
 
 #[inline(always)]
 fn lsb(n: usize) -> usize {
@@ -31,7 +31,7 @@ pub struct Fenwick<T> {
 impl<T> Fenwick<T>
 where 
     T: Add<Output = T> + Sub<Output = T> + AddAssign + SubAssign + Ord + 
-       Default + Copy, 
+       Default + Copy,
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
     /// prefix sums. The size is adjusted to be 1 + a power of 2 if it already
@@ -93,7 +93,7 @@ where
     /// will return the prefix sum of each element in the tree. The iterator 
     /// iterates over elements with `O(log(n))` time-complexity each.
     /// 
-    pub fn iter(&self) -> FenwickIter<T> {
+    pub fn iter(&self) -> FenwickIter<'_, T> {
         self.into_iter()
     }
 
@@ -119,6 +119,7 @@ where
     
     /// Returns the length of the prefix sum aray.
     ///
+    #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> usize {
         self.size
     }
@@ -196,9 +197,11 @@ where
         let mut v    = value;
         
         while step > 0 {
-            if i + step <= self.size && self.data[i + step - 1] < v {
-                v -= self.data[i + step - 1];
-                i += step;
+            let j = i + step;
+
+            if j <= self.size && self.data[j - 1] < v {
+                v -= self.data[j - 1];
+                i = j;
             }
             step >>= 1;
         }
