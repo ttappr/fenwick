@@ -34,8 +34,7 @@ where
        Default + Copy,
 {
     /// Creates a new Fenwick Tree for use in calculating and updating
-    /// prefix sums. The size is adjusted to be 1 + a power of 2 if it already
-    /// isn't.
+    /// prefix sums.
     ///
     pub fn new(size: usize) -> Self {
         Self { 
